@@ -17,24 +17,24 @@ source("datahandling.R")
 library(dplyr);
 
 # import data
-data_path <- 'data/linie-mit-betriebspunkten_wgs84.csv';
+data_path <- 'Data/Betriebspunkte_wgs84.csv';
 data_geopos <- read.csv(data_path, sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE);
-data_path <- 'Data/2019-05-05istdaten.csv';
+data_path <- 'Data/2020_05_05_ist-daten-sbb.csv';
 data_delay <- read.csv(data_path, sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE);
 data_delay <- data_delay[which(data_delay$PRODUKT_ID == 'Zug'),];
 
-# calculate delays
-data_delay <- calculate_delays(data_delay)
+# calculate delays if necessary
+#data_delay <- calculate_delays(data_delay)
 
 # Define col names vector
 vec <- c('BPUIC','HALTESTELLEN_NAME', 'ankunftsverspatung', 'abfahrtsverspatung')
 
 # call function
 stat_delay <- delays_per_station(data_delay, vec)
-stat_geopos <- stations_with_geopos(data_geopos, c('BPUIC', 'geopos'))
+#stat_geopos <- stations_with_geopos(data_geopos, c('BPUIC', 'geopos'))
 
 # Join Dataframes
-stat_delay_geopos <- left_join(stat_delay, stat_geopos, by = 'BPUIC');
+stat_delay_geopos <- left_join(stat_delay, data_geopos, by = 'BPUIC');
 
 # extract subsets
 data_S <- data_delay[which(data_delay$LINIEN_TEXT=='S3'),];
