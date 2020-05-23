@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 #   MobiGI Network Analysis 
 #   
-#   Title:  Calculate_percent_on_time.R
+#   Title:  datahandling.R
 #   Author: Jonas Meyer
 #   Date:   05.05.2020    meyj
 #         
@@ -14,6 +14,7 @@ options(warning=FALSE)    # don't show warnings
 
 # load package
 library(dplyr);
+library(tidyr);
 
 delays_per_station <- function(data, column_names){
     "This function takes as input a data frame of Swiss Public Transport Data 
@@ -23,14 +24,14 @@ delays_per_station <- function(data, column_names){
     input:  data: data frame from Swiss Public Transport Data
             column_names: Column Names for: station ID
                                             station Name
-                                            Geo-Position
                                             Arrival delay
                                             Departure delay
     output: data frame with Number of train stops and delays, percentage of stops on time
             per Station "
     
-    data <- rename(data, 'BPUIC' = column_names[1], 'HALTESTELLEN_NAME' = column_names[2], 'geopos' = column_names[3], 'ankunftsverspatung' = column_names[4], 'abfahrtsverspatung' = column_names[5])
-    str(data)
+    # rename column names
+    data <- rename(data, 'BPUIC' = column_names[1], 'HALTESTELLEN_NAME' = column_names[2], 'ankunftsverspatung' = column_names[3], 'abfahrtsverspatung' = column_names[4]);
+    
     # get index of unique values of BP
     index <- match(unique(data$BPUIC), data$BPUIC);
     
@@ -38,27 +39,26 @@ delays_per_station <- function(data, column_names){
     stat <- data.frame(count(data, BPUIC, ankunftsverspatung, abfahrtsverspatung));
     
     # remove dateset with no delay
-    stat_neg <- stat[which(stat$ankunftsverspatung=='false' & stat$abfahrtsverspatung=='false'),]
-    stat_neg <- stat[which(stat$ankunftsverspatung=='false' & stat$abfahrtsverspatung=='false'),]
-    stat <- anti_join(stat, stat_neg)
+    stat_neg <- stat[which(stat$ankunftsverspatung=='false' & stat$abfahrtsverspatung=='false'),];
+    stat <- anti_join(stat, stat_neg);
     
     # Aggregate all delays per BP
-    stat_delay <- aggregate(n ~ BPUIC, data = stat, sum)
-    colnames(stat_delay) <- c("BPUIC", "Num_delays")
+    stat_delay <- aggregate(n ~ BPUIC, data = stat, sum);
+    colnames(stat_delay) <- c("BPUIC", "Num_delays");
     
     # unique values of bpuic
-    t <- table(data$BPUIC)
-    stat_bpuic <- data.frame(BPUIC=names(t),freq=as.numeric(t))
+    t <- table(data$BPUIC);
+    stat_bpuic <- data.frame(BPUIC=names(t),freq=as.numeric(t));
     stat_bpuic$BPUIC <- as.numeric(as.character(stat_bpuic$BPUIC));
     
     # Create new dataframe
-    delays <- data.frame('BPUIC' = unique(data$BPUIC), 'Station' = data[index,'HALTESTELLEN_NAME'], 'Position'= data[index,'geopos']);
+    delays <- data.frame('BPUIC' = unique(data$BPUIC), 'Station' = data[index,'HALTESTELLEN_NAME']);
     
     # Join Dataframe
     stat_delay <- left_join(delays, stat_delay);
     stat_delay <- left_join(stat_delay, stat_bpuic);
     # Rename column-name
-    colnames(stat_delay) <- c("BPUIC", "Station", "Position", "Num_delays", "Num_stops");
+    colnames(stat_delay) <- c("BPUIC", "Station", "Num_delays", "Num_stops");
     
     # Change NA-values to 0 
     stat_delay[is.na(stat_delay)] <- 0;
@@ -69,5 +69,34 @@ delays_per_station <- function(data, column_names){
     # Combine Data to result dataframe
     stat_delay <- cbind(stat_delay, percent_on_time);
     
-    return(stat_delay)
+    return(stat_delay);
 }
+
+stations_with_geopos <- function(data, column_names){
+    "This function takes as input a data frame of Swiss Public Transport Data 
+    'Linien mit Betriebspunkten' and returns a data frame with unique Stations (no dublicates)
+    
+    input:  data: data frame from Swiss Public Transport Data
+            column_names: Column Names for: station ID
+                                            GeoPosition
+                        
+    output: data frame without dublicated stations and separated geoposition (lat, lon) "
+    
+    # rename column names
+    data <- rename(data, 'BPUIC' = column_names[1], 'Position'= column_names[2]);
+    # get index of unique values
+    index <- match(unique(data$BPUIC), data$BPUIC);
+    
+    data <- data.frame('BPUIC' = data[index, 'BPUIC'], 'Position' = data[index,'Position']);
+    
+    # separate Position in to lat and lon
+    data <- separate(data, Position, c("lat", "lon"), sep=",");
+    
+    # convert character to numeric
+    options(digits = 10);
+    data$lat <- as.numeric(data$lat);
+    data$lon <- as.numeric(data$lon);
+    
+    return(data)
+}
+
