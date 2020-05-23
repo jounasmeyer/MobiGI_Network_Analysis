@@ -100,3 +100,33 @@ stations_with_geopos <- function(data, column_names){
     return(data)
 }
 
+
+calculate_delays <- function(data){
+    "This function takes as input a data frame of Swiss Public Transport Data stored in Google Drive
+    https://drive.google.com/drive/folders/1SVa68nJJRL3qgRSPKcXY7KuPN9MuHVhJ
+    
+    input:  data frame from Swiss Public Transport Data
+
+    output: data frame with calculated delays as boolean"
+    
+    # Convert times in to POSIXct
+    data$ABFAHRTSZEIT <-  as.POSIXct(data$ABFAHRTSZEIT, format = '%d.%m.%Y %H:%M');
+    data$AB_PROGNOSE <- as.POSIXct(data$AB_PROGNOSE, format = '%d.%m.%Y %H:%M:%S');
+    data$ANKUNFTSZEIT <-  as.POSIXct(data$ANKUNFTSZEIT, format = '%d.%m.%Y %H:%M');
+    data$AN_PROGNOSE <- as.POSIXct(data$AN_PROGNOSE, format = '%d.%m.%Y %H:%M:%S');
+    
+    # find index of delays
+    index_dep <- which(difftime(data$AB_PROGNOSE, data$ABFAHRTSZEIT, units="mins") > 3 & data$AB_PROGNOSE_STATUS == 'REAL');
+    index_arr <- which(difftime(data$AN_PROGNOSE, data$ANKUNFTSZEIT, units="mins") > 3 & data$AN_PROGNOSE_STATUS == 'REAL');
+    
+    # create vector of length as data frame data_delay
+    abfahrtsverspatung <- replicate(nrow(data), 'false');
+    ankunftsverspatung <- replicate(nrow(data), 'false');
+    
+    abfahrtsverspatung[index_dep] <- c('true');
+    ankunftsverspatung[index_arr] <- c('true');
+    
+    data <- cbind(data, ankunftsverspatung, abfahrtsverspatung);
+    
+    return(data)
+}
