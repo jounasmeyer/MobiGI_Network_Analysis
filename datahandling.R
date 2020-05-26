@@ -6,15 +6,7 @@
 #   Date:   05.05.2020    meyj
 #         
 #--------------------------------------------------------------------------------------------------------------------------------------------------
-# Preliminaries
-rm(list=ls(all=TRUE))     # clean the environment
-options(scipen=6)         # display digits properly!! not the scientific version
-options(digits.secs=6)    # use milliseconds in Date/Time data types
-options(warning=FALSE)    # don't show warnings
 
-# load package
-library(dplyr);
-library(tidyr);
 
 delays_per_station <- function(data, column_names){
     "This function takes as input a data frame of Swiss Public Transport Data 
@@ -28,6 +20,10 @@ delays_per_station <- function(data, column_names){
                                             Departure delay
     output: data frame with Number of train stops and delays, percentage of stops on time
             per Station "
+  
+    require(dplyr);
+    require(tidyr);
+  
     
     # rename column names
     data <- rename(data, 'BPUIC' = column_names[1], 'HALTESTELLEN_NAME' = column_names[2], 'ankunftsverspatung' = column_names[3], 'abfahrtsverspatung' = column_names[4]);
@@ -81,6 +77,9 @@ stations_with_geopos <- function(data, column_names){
                                             GeoPosition
                         
     output: data frame without dublicated stations and separated geoposition (lat, lon) "
+    require(dplyr);
+    require(tidyr);
+  
     
     # rename column names
     data <- rename(data, 'BPUIC' = column_names[1], 'Position'= column_names[2]);
@@ -112,6 +111,9 @@ calculate_delays <- function(data, column_names){
                                             Arrival Time
 
     output: data frame with calculated delays as boolean"
+  
+    require(dplyr);
+    require(tidyr);
     
     data <- rename(data, 'ABFAHRTSZEIT' = column_names[1], 'AB_PROGNOSE' = column_names[2], 'ANKUNFTSZEIT' = column_names[3], 'AN_PROGNOSE' = column_names[4]);
     

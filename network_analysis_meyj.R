@@ -14,6 +14,7 @@ options(warning=FALSE)    # don't show warnings
 
 # Load Function from external files
 source("datahandling.R")
+source("Map_percent_on_time.R")
 library(dplyr);
 
 # import data
@@ -52,3 +53,6 @@ write.table(data_S, 'Output/s_output.csv', sep = ";", dec = ".", row.names = FAL
 write.table(data_IC, 'Output/ic_output.csv', sep = ";", dec = ".", row.names = FALSE)
 write.table(data_IR, 'Output/ir_output.csv', sep = ";", dec = ".", row.names = FALSE)
 write.table(stat_delay_geopos, 'Output/stat_delay_output.csv', sep = ";", dec = ".", row.names = FALSE)
+
+visualize_delays(stat_delay_geopos)
+visualize_stops(stat_delay_geopos)
