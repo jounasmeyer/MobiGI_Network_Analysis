@@ -101,13 +101,19 @@ stations_with_geopos <- function(data, column_names){
 }
 
 
-calculate_delays <- function(data){
+calculate_delays <- function(data, column_names){
     "This function takes as input a data frame of Swiss Public Transport Data stored in Google Drive
     https://drive.google.com/drive/folders/1SVa68nJJRL3qgRSPKcXY7KuPN9MuHVhJ
     
-    input:  data frame from Swiss Public Transport Data
+    input:  data: data frame from Swiss Public Transport Data
+            column_names: Column Names for: Departure Time (Timetable)
+                                            Departure Time
+                                            Arrival Time (Timetable)
+                                            Arrival Time
 
     output: data frame with calculated delays as boolean"
+    
+    data <- rename(data, 'ABFAHRTSZEIT' = column_names[1], 'AB_PROGNOSE' = column_names[2], 'ANKUNFTSZEIT' = column_names[3], 'AN_PROGNOSE' = column_names[4]);
     
     # Convert times in to POSIXct
     data$ABFAHRTSZEIT <-  as.POSIXct(data$ABFAHRTSZEIT, format = '%d.%m.%Y %H:%M');

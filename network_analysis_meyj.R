@@ -19,19 +19,20 @@ library(dplyr);
 # import data
 data_path <- 'Data/Betriebspunkte_wgs84.csv';
 data_geopos <- read.csv(data_path, sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE);
-data_path <- 'Data/2019-05-07istdaten.csv';
+data_path <- 'Data/2020-04-21istdaten.csv';
 data_delay <- read.csv(data_path, sep = ';', encoding = 'UTF-8', stringsAsFactors = FALSE);
 data_delay <- data_delay[which(data_delay$PRODUKT_ID == 'Zug'),];
 
-# calculate delays if necessary
-data_delay <- calculate_delays(data_delay)
 
 # Define col names vector
 vec <- c('BPUIC','HALTESTELLEN_NAME', 'ankunftsverspatung', 'abfahrtsverspatung')
+vec1 <- c('ABFAHRTSZEIT','AB_PROGNOSE', 'ANKUNFTSZEIT', 'AN_PROGNOSE')
 
-# call function
+# calculate delays
+data_delay <- calculate_delays(data_delay, vec1)
+
+# summarise delays
 stat_delay <- delays_per_station(data_delay, vec)
-#stat_geopos <- stations_with_geopos(data_geopos, c('BPUIC', 'geopos'))
 
 # Join Dataframes
 stat_delay_geopos <- left_join(stat_delay, data_geopos, by = 'BPUIC');
@@ -47,8 +48,7 @@ data_IC <- delays_per_station(data_IC, vec)
 data_IR <- delays_per_station(data_IR, vec)
 
 # Export datasets
-write.table(data_S, 'Output19/s_output.csv', sep = ";", dec = ".", row.names = FALSE)
-write.table(data_IC, 'Output19/ic_output.csv', sep = ";", dec = ".", row.names = FALSE)
-write.table(data_IR, 'Output19/ir_output.csv', sep = ";", dec = ".", row.names = FALSE)
-write.table(stat_delay_geopos, 'Output19/stat_delay_output.csv', sep = ";", dec = ".", row.names = FALSE)
-
+write.table(data_S, 'Output/s_output.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(data_IC, 'Output/ic_output.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(data_IR, 'Output/ir_output.csv', sep = ";", dec = ".", row.names = FALSE)
+write.table(stat_delay_geopos, 'Output/stat_delay_output.csv', sep = ";", dec = ".", row.names = FALSE)
